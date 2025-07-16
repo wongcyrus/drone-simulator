@@ -146,6 +146,11 @@ class PhysicsEngine:
         self.animations[drone_state.drone_id] = {
             'type': 'flip',
             'start_time': time.time(),
+            'start_position': Vector3(
+                drone_state.position.x,
+                drone_state.position.y,
+                drone_state.position.z
+            ),
             'start_rotation': Vector3(
                 drone_state.rotation.x,
                 drone_state.rotation.y,
@@ -269,6 +274,7 @@ class PhysicsEngine:
         flip_progress = math.sin(progress * math.pi)
         
         start_rotation = animation['start_rotation']
+        start_position = animation['start_position']
         axis = animation['axis']
         rotation_amount = animation['rotation_amount']
         
@@ -279,8 +285,13 @@ class PhysicsEngine:
         else:  # z axis
             drone_state.rotation.z = start_rotation.z + rotation_amount * flip_progress
         
-        # Add slight vertical movement during flip
-        drone_state.position.z += 20 * math.sin(progress * math.pi)
+        # Maintain original position during flip with slight vertical movement for realism
+        drone_state.position.x = start_position.x
+        drone_state.position.y = start_position.y
+        drone_state.position.z = start_position.z + 20 * math.sin(progress * math.pi)
+        
+        # Reset velocity to prevent gravity/physics from interfering with flip position
+        drone_state.velocity = Vector3(0, 0, 0)
     
     def _update_rotation_animation(self, drone_state: DroneState, animation: dict, progress: float) -> None:
         """Update rotation animation"""
@@ -331,7 +342,7 @@ class PhysicsEngine:
         # Don't apply gravity during certain animations that manage their own Z position
         if drone_state.drone_id in self.animations:
             animation = self.animations[drone_state.drone_id]
-            if animation['type'] in ['takeoff', 'landing', 'linear', 'curve']:
+            if animation['type'] in ['takeoff', 'landing', 'linear', 'curve', 'flip']:
                 return  # These animations control Z position directly
         
         # Convert gravity from m/s² to cm/s²
@@ -340,11 +351,11 @@ class PhysicsEngine:
         # Apply gravity to vertical velocity
         drone_state.velocity.z -= gravity_cm * dt
         
-        # Add hover stabilization for rotation and flip animations, or when just hovering
+        # Add hover stabilization for rotation animations only (not flip)
         if drone_state.drone_id in self.animations:
             animation = self.animations[drone_state.drone_id]
-            if animation['type'] in ['rotation', 'flip']:
-                # Maintain hover height during rotation/flip
+            if animation['type'] == 'rotation':
+                # Maintain hover height during rotation only
                 target_height = self.hover_height
                 height_error = target_height - drone_state.position.z
                 
