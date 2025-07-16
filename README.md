@@ -22,19 +22,32 @@ A comprehensive 3D simulation environment for RoboMaster TT drones with realisti
 
 ### Installation
 
-1. **Set up virtual environment (recommended):**
+**⚠️ Important: Always use a virtual environment to avoid dependency conflicts!**
+
+1. **Set up virtual environment (REQUIRED):**
 ```bash
 # Windows
 setup_venv.bat
 
-# Linux/Mac
+# Linux/Mac (if available)
 chmod +x setup_venv.sh && ./setup_venv.sh
 ```
 
-2. **Or install dependencies manually:**
+2. **Activate the virtual environment:**
+```bash
+# Windows
+venv\Scripts\activate
+
+# Linux/Mac
+source venv/bin/activate
+```
+
+3. **Install dependencies (if not done by setup script):**
 ```bash
 pip install -r requirements.txt
 ```
+
+**Note:** The virtual environment ensures all dependencies are isolated and prevents conflicts with your system Python packages. Always activate the virtual environment before running any commands.
 
 3. **Start the simulation components:**
 
