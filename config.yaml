@@ -1,0 +1,22 @@
+# RoboMaster TT 3D Simulator Configuration
+
+# Server Settings
+backend_port: 8000
+websocket_port: 8001
+
+# Drone Settings
+max_drones: 10
+base_udp_port: 8889
+default_speed: 100
+
+# Physics Settings
+gravity: 9.81
+air_resistance: 0.1
+max_acceleration: 500
+
+# Simulation Settings
+update_rate: 30
+battery_drain_rate: 0.1
+
+# 3D Scene Settings (x, y, z in cm)
+scene_bounds: [1000, 1000, 500]
