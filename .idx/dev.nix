@@ -46,6 +46,22 @@
         #     PORT = "$PORT";
         #   };
         # };
+        web = {
+          # cwd = "subfolder"
+          command = [
+            "bash"
+            "-c"
+            ''
+            # activate the virtual environment
+            source $VENV_DIR/bin/activate
+            
+            # run app in hot reload mode on a port provided by IDX
+            python -m backend.server
+            ''
+          ];
+          env = { PORT = "$PORT"; };
+          manager = "web";
+        };
 
       };
     };
@@ -77,9 +93,9 @@
           source $VENV_DIR/bin/activate
           pip install -r requirements.txt
         '';
-        web-backend = "source $VENV_DIR/bin/activate && python -m backend.server";
-        mock-drone1 = "source $VENV_DIR/bin/activate && sleep 5 && python  -m mock_drone.mock_drone --drone-id drone_1 --port 8889";
-        mock-drone2 = "source $VENV_DIR/bin/activate && sleep 5 && python  -m mock_drone.mock_drone --drone-id drone_2 --port 8890";
+        #web-backend = "source $VENV_DIR/bin/activate && python -m backend.server";
+        mock-drone1 = "source $VENV_DIR/bin/activate && sleep 5 && python -m mock_drone.mock_drone --drone-id drone_1 --port 8889";
+        mock-drone2 = "source $VENV_DIR/bin/activate && sleep 5 && python -m mock_drone.mock_drone --drone-id drone_2 --port 8890";
       };
       # Runs when the workspace is (re)started
     };

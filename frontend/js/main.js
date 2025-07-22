@@ -24,8 +24,15 @@ class SimulatorApp {
             // Initialize UI controller
             this.uiController = new UIController();
             
-            // Initialize WebSocket connection
-            this.websocketClient = new WebSocketClient('ws://localhost:8000/ws');
+            // Initialize WebSocket connection            
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            const wsHost = window.location.hostname;
+            const wsPort = window.location.port; // This gets the current port from the URL
+            const wsPath = '/ws';
+
+            const wsUrl = `${wsProtocol}://${wsHost}${wsPort ? `:${wsPort}` : ''}${wsPath}`;
+
+            this.websocketClient = new WebSocketClient(wsUrl);
             this.setupWebSocketHandlers();
             
             // Start render loop
