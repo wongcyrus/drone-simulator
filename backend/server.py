@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from contextlib import asynccontextmanager
 import asyncio
 import json
 import logging
@@ -226,11 +227,35 @@ config_manager = ConfigManager()
 drone_state_manager = DroneStateManager()
 websocket_manager = WebSocketManager()
 
+# Background task reference
+cleanup_task = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events"""
+    global cleanup_task
+    
+    # Startup
+    logger.info("Starting RoboMaster TT 3D Simulator Backend")
+    cleanup_task = asyncio.create_task(cleanup_inactive_drones_task())
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down RoboMaster TT 3D Simulator Backend")
+    if cleanup_task:
+        cleanup_task.cancel()
+        try:
+            await cleanup_task
+        except asyncio.CancelledError:
+            pass
+
 # FastAPI app
 app = FastAPI(
     title="RoboMaster TT 3D Simulator Backend",
     description="Backend server for managing drone states and WebSocket communication",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware
@@ -259,19 +284,7 @@ logging.basicConfig(
 logger = logging.getLogger("BackendServer")
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize server on startup"""
-    logger.info("Starting RoboMaster TT 3D Simulator Backend")
-    
-    # Start cleanup task for inactive drones
-    asyncio.create_task(cleanup_inactive_drones_task())
 
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on server shutdown"""
-    logger.info("Shutting down RoboMaster TT 3D Simulator Backend")
 
 
 async def cleanup_inactive_drones_task():
